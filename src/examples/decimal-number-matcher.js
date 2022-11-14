@@ -1,7 +1,35 @@
 // noinspection JSUnusedGlobalSymbols
 
+/*
+ *  const validationSchema = shape({
+ *    firstKey: decimal(), // params.length === 0
+ *    secondKey: decimal(1), // params.length === 1
+ *    thirdKey: decimal(1, 2), // params.length === 2
+ *  })
+ * const dtoIn = {
+ *   firstKey: 0,123456789101112
+ * }
+ */
+
+
 const Decimal = require("decimal.js");
 const ValidationResult = require("./validation-result");
+
+const Errors = {
+  invalidDecimalValue: {
+    code: "doubleNumber.e001",
+    message: "The value is not a valid decimal number."
+  },
+  isOverMaxNumOfDigits: {
+    code: "doubleNumber.e002",
+    message: "The value exceeded maximum number of digits."
+  },
+  isOverMaxNumOfDecPlaces: {
+    code: "doubleNumber.e003",
+    message: "The value exceeded maximum number of decimal places."
+  }
+};
+const DEFAULT_PRECISION = 11;
 
 /**
  * Matcher validates that string value represents a decimal number or null.
@@ -19,58 +47,52 @@ const ValidationResult = require("./validation-result");
 class DecimalNumberMatcher {
   constructor(...params) {
     this.params = params;
+    this.precision = this.params[0] ?? DEFAULT_PRECISION;
+    this.decimalPlaces = this.params[1];
   }
 
   match(value) {
     let result = new ValidationResult();
-
-    if (value != null) {
-      if (this.params.length === 0) {
-        let number;
-        try {
-          number = new Decimal(value);
-        } catch (e) {
-          number = null;
-          result.addInvalidTypeError("doubleNumber.e001", "The value is not a valid decimal number.");
-        }
-        if (number) {
-          if (number.precision(true) > 11) {
-            result.addInvalidTypeError("doubleNumber.e002", "The value exceeded maximum number of digits.");
-          }
-        }
-      } else if (this.params.length === 1) {
-        let number;
-        try {
-          number = new Decimal(value);
-        } catch (e) {
-          number = null;
-          result.addInvalidTypeError("doubleNumber.e001", "The value is not a valid decimal number.");
-        }
-        if (number) {
-          if (number.precision(true) > this.params[0]) {
-            result.addInvalidTypeError("doubleNumber.e002", "The value exceeded maximum number of digits.");
-          }
-        }
-      } else if (this.params.length === 2) {
-        let number;
-        try {
-          number = new Decimal(value);
-        } catch (e) {
-          number = null;
-          result.addInvalidTypeError("doubleNumber.e001", "The value is not a valid decimal number.");
-        }
-        if (number) {
-          if (number.precision(true) > this.params[0]) {
-            result.addInvalidTypeError("doubleNumber.e002", "The value exceeded maximum number of digits.");
-          }
-          if (number.decimalPlaces() > this.params[1]) {
-            result.addInvalidTypeError("doubleNumber.e003", "The value exceeded maximum number of decimal places.");
-          }
-        }
-      }
+    let number;
+    if (value === null) {
+      return result;
     }
+    number = this._validateDecNumber(value, result, Errors.invalidDecimalValue);
+    if (!number) { //If number is 0 it fullfills the condition - I think it is wrong
+      return result;
+    }
+    this._checkPrecisionGreaterThanValue(number, result, Errors.isOverMaxNumOfDigits);
+
+    this._checkDecPlacesGreaterThanValue(number, result, Errors.isOverMaxNumOfDecPlaces);
 
     return result;
+  }
+
+  _checkDecPlacesGreaterThanValue(number, result, error) {
+    if (this.params.length !== 2) {
+      return result;
+    }
+    if (number.decimalPlaces() > this.decimalPlaces) {
+      result.addInvalidTypeError(error.code, error.message);
+    }
+  }
+
+  _checkPrecisionGreaterThanValue(number, result, error) {
+    if (number.precision(true) > this.precision) {
+      result.addInvalidTypeError(error.code, error.message);
+    }
+    return number;
+  }
+
+  _validateDecNumber(value, result, error) {
+    let number;
+    try {
+      number = new Decimal(value);
+    } catch (e) {
+      number = null;
+      result.addInvalidTypeError(error.code, error.message);
+    }
+    return number;
   }
 }
 
