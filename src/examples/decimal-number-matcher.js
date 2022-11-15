@@ -1,17 +1,4 @@
 // noinspection JSUnusedGlobalSymbols
-
-/*
- *  const validationSchema = shape({
- *    firstKey: decimal(), // params.length === 0
- *    secondKey: decimal(1), // params.length === 1
- *    thirdKey: decimal(1, 2), // params.length === 2
- *  })
- * const dtoIn = {
- *   firstKey: 0,123456789101112
- * }
- */
-
-
 const Decimal = require("decimal.js");
 const ValidationResult = require("./validation-result");
 
@@ -57,34 +44,35 @@ class DecimalNumberMatcher {
     if (value === null) {
       return result;
     }
-    number = this._validateDecNumber(value, result, Errors.invalidDecimalValue);
-    if (!number) { //If number is 0 it fullfills the condition - I think it is wrong
+    number = this._getDecNumber(value, result, Errors.invalidDecimalValue);
+    if (!number) { //If number is 0 it fullfills the condition - I think it is wrong, but it was in original code
       return result;
     }
-    this._checkPrecisionGreaterThanValue(number, result, Errors.isOverMaxNumOfDigits);
-
-    this._checkDecPlacesGreaterThanValue(number, result, Errors.isOverMaxNumOfDecPlaces);
+    this._addErrorIntoResult(this._isPrecisionGreaterThanValue(number), this._isDecPlacesGreaterThanValue(number), result);
 
     return result;
   }
 
-  _checkDecPlacesGreaterThanValue(number, result, error) {
+  _addErrorIntoResult(isPrecisionGreaterThanValue, isDecPlacesGreaterThanValue, result){
+    if(isPrecisionGreaterThanValue){
+      result.addInvalidTypeError(Errors.isOverMaxNumOfDigits.code, Errors.isOverMaxNumOfDigits.message);
+    }
+    if(isDecPlacesGreaterThanValue){
+      result.addInvalidTypeError(Errors.isOverMaxNumOfDecPlaces.code, Errors.isOverMaxNumOfDecPlaces.message);
+    }
+  }
+  _isDecPlacesGreaterThanValue(number) {
     if (this.params.length !== 2) {
-      return result;
+      return false;
     }
-    if (number.decimalPlaces() > this.decimalPlaces) {
-      result.addInvalidTypeError(error.code, error.message);
-    }
+    return number.decimalPlaces() > this.decimalPlaces;
   }
 
-  _checkPrecisionGreaterThanValue(number, result, error) {
-    if (number.precision(true) > this.precision) {
-      result.addInvalidTypeError(error.code, error.message);
-    }
-    return number;
+  _isPrecisionGreaterThanValue(number) {
+    return number.precision(true) > this.precision;
   }
 
-  _validateDecNumber(value, result, error) {
+  _getDecNumber(value, result, error) {
     let number;
     try {
       number = new Decimal(value);
