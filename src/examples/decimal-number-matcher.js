@@ -3,17 +3,17 @@ const Decimal = require("decimal.js");
 const ValidationResult = require("./validation-result");
 
 const Errors = {
-  invalidDecimalValue: {
-    code: "doubleNumber.e001",
-    message: "The value is not a valid decimal number."
+  InvalidDecimalValue: {
+    CODE: "doubleNumber.e001",
+    MESSAGE: "The value is not a valid decimal number."
   },
-  isOverMaxNumOfDigits: {
-    code: "doubleNumber.e002",
-    message: "The value exceeded maximum number of digits."
+  IsOverMaxNumOfDigits: {
+    CODE: "doubleNumber.e002",
+    MESSAGE: "The value exceeded maximum number of digits."
   },
-  isOverMaxNumOfDecPlaces: {
-    code: "doubleNumber.e003",
-    message: "The value exceeded maximum number of decimal places."
+  IsOverMaxNumOfDecPlaces: {
+    CODE: "doubleNumber.e003",
+    MESSAGE: "The value exceeded maximum number of decimal places."
   }
 };
 const DEFAULT_PRECISION = 11;
