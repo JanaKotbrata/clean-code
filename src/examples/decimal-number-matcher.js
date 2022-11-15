@@ -48,17 +48,15 @@ class DecimalNumberMatcher {
     if (!number) { //If number is 0 it fullfills the condition - I think it is wrong, but it was in original code
       return result;
     }
-    this._addErrorIntoResult(this._isPrecisionGreaterThanValue(number), this._isDecPlacesGreaterThanValue(number), result);
+    this._addErrorIntoResult(this._isPrecisionGreaterThanValue(number), Errors.isOverMaxNumOfDigits, result);
+    this._addErrorIntoResult(this._isDecPlacesGreaterThanValue(number), Errors.isOverMaxNumOfDecPlaces, result);
 
     return result;
   }
 
-  _addErrorIntoResult(isPrecisionGreaterThanValue, isDecPlacesGreaterThanValue, result){
-    if(isPrecisionGreaterThanValue){
-      result.addInvalidTypeError(Errors.isOverMaxNumOfDigits.code, Errors.isOverMaxNumOfDigits.message);
-    }
-    if(isDecPlacesGreaterThanValue){
-      result.addInvalidTypeError(Errors.isOverMaxNumOfDecPlaces.code, Errors.isOverMaxNumOfDecPlaces.message);
+  _addErrorIntoResult(checkResult, error, result){
+    if(checkResult){
+      result.addInvalidTypeError(error.code, error.message);
     }
   }
   _isDecPlacesGreaterThanValue(number) {
