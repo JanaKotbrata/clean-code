@@ -44,12 +44,12 @@ class DecimalNumberMatcher {
     if (value === null) {
       return result;
     }
-    number = this._getDecNumber(value, result, Errors.invalidDecimalValue);
+    number = this._getDecNumber(value, result, Errors.InvalidDecimalValue);
     if (!number) { //If number is 0 it fullfills the condition - I think it is wrong, but it was in original code
       return result;
     }
-    this._addErrorIntoResult(this._isPrecisionGreaterThanValue(number), Errors.isOverMaxNumOfDigits, result);
-    this._addErrorIntoResult(this._isDecPlacesGreaterThanValue(number), Errors.isOverMaxNumOfDecPlaces, result);
+    this._addErrorIntoResult(this._isPrecisionGreaterThanValue(number), Errors.IsOverMaxNumOfDigits, result);
+    this._addErrorIntoResult(this._isDecPlacesGreaterThanValue(number), Errors.IsOverMaxNumOfDecPlaces, result);
 
     return result;
   }
